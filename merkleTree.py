@@ -39,10 +39,8 @@ class MerkleTree:
 		Create nodes based on the partition list
 		"""
 		for node in self.partitionList:
-			self.hashList[node] = []
-			#self.hashList[node].insert(0, '')
-			#self.hashList[node].insert(1, '')
-
+			self.hashList[node].append('')
+			self.hashList[node].append('')
 
 	def addRows(self, key):
 		"""
@@ -53,7 +51,7 @@ class MerkleTree:
 			"""
 			Recursive binary search within the partition list
 			"""
-			print "Iteration: " + " start: " + str(start) + " End: " + str(end)
+			#print "Iteration: " + " start: " + str(start) + " End: " + str(end)
 			if (end - start <= 1):
 				return end
 			else:
@@ -65,23 +63,30 @@ class MerkleTree:
 
 		# main add rows method implem
 		index = recursiveAddRows(0, len(self.partitionList), key)
-		print "index: " + str(index)
 		token = self.partitionList[index]
-		self.hashList[token].append(key)
 
+		# decide whether it's a left child or a right child
+		if (key < token):
+			# it's a left child
+			index = 0
+		else: 
+			# it's a right child
+			index = 1
+		# to concatenate the leaf value, sum and hash
+		self.hashList[token][index] = self.hashSum(token, index, key)
 
-		# while ((token + self.partitioner) < self.maxRange):
-		# 	if (key > token and key < (token + self.partitioner)):
-		# 		index = 0
-		# 		break;
-		# 	# elif (key > (token + self.partitioner) and key < (token + self.partitioner + self.partitioner)):
-		# 	# 	index = 1
-		# 	# 	break;
-		# 	token = token + self.partitioner
-		# if (index == 0):
-		# 	token = token + self.partitioner
-		# self.hashList[token][index] = key
-
+	def hashSum(self, token, index, key):
+		"""
+		This function will concatentate a leaf value in case of multiple rows
+		"""
+		if (self.hashList[token][index] is not None):
+			# add the two 
+			oldValue = self.hashList[token][index]
+			newValue = hash(str(key))
+			newNodeValue = hash(oldValue + newValue)
+			return newNodeValue
+		else:
+			return hash(str(key))
 
 	def setRoot(self):
 		"""
@@ -108,7 +113,11 @@ class MerkleTree:
 
 #def MerkleTreeDifference(ltree, rtree):
 
-
+def hash(key):
+	"""
+	generic hash function
+	"""
+	return str(hashlib.md5(key).hexdigest())
 
 def main():
 	testDepth = 3
@@ -122,14 +131,21 @@ def main():
 	ltree.addRows(135)
 	ltree.addRows(170)
 	ltree.addRows(185)
+	print "Tree 1: -> \n"
 	ltree.display()
 
-	# rtree = MerkleTree(testPartition, testMaxRange, rtreeRows)
-	# rtree.display()
+	# create second tree
+	rtree = MerkleTree(testPartition, testDepth, testMaxRange)
+	rtree.addRows(90)
+	rtree.addRows(135)
+	rtree.addRows(170)
+	rtree.addRows(185)
+	print "Tree 2: -> \n"
+	rtree.display()
 
 	# # find out the difference in the trees
 	# diff = MerkleTreeDifference(ltree, rtree);
 
 if __name__ == '__main__':
-	print "Simple MerkleTree Implementation Test"
+	print "Simple MerkleTree Implementation Test \n"
 	main()
