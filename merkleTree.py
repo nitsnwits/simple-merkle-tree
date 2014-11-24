@@ -3,6 +3,11 @@
 from collections import defaultdict
 import hashlib
 
+# Global constants
+CONSISTENT = 0
+FULLY_INCONSISTENT = 1
+PARTIALLY_INCONSISTENT = 2
+
 class MerkleTree:
 	def __init__(self, partitioner, depth, maxRange):
 		self.partitioner = partitioner
@@ -111,7 +116,11 @@ class MerkleTree:
 
 
 
-#def MerkleTreeDifference(ltree, rtree):
+def MerkleTreeDifference(ltree, rtree):
+	if (ltree.getRoot() == rtree.getRoot()):
+		print "Roots are equal: Tree1 Root-> " + str(ltree.getRoot()) + " Tree2 Root-> " + str(rtree.getRoot())
+		return CONSISTENT
+			
 
 def hash(key):
 	"""
@@ -127,7 +136,7 @@ def main():
 
 	# create first tree
 	ltree = MerkleTree(testPartition, testDepth, testMaxRange)
-	ltree.addRows(5)
+	ltree.addRows(90)
 	ltree.addRows(135)
 	ltree.addRows(170)
 	ltree.addRows(185)
@@ -143,8 +152,15 @@ def main():
 	print "Tree 2: -> \n"
 	rtree.display()
 
-	# # find out the difference in the trees
-	# diff = MerkleTreeDifference(ltree, rtree);
+	# find out the difference in the trees
+	print "\nCalculating difference in two trees: \n"
+	diff = MerkleTreeDifference(ltree, rtree);
+	if (diff == CONSISTENT):
+		print "\tResult: CONSISTENT"
+	elif (diff == FULLY_INCONSISTENT):
+		print "\tResult: FULLY_INCONSISTENT"
+	elif (diff == PARTIALLY_INCONSISTENT):
+		print "\tResult: PARTIALLY_INCONSISTENT"
 
 if __name__ == '__main__':
 	print "Simple MerkleTree Implementation Test \n"
