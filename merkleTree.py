@@ -8,6 +8,40 @@ CONSISTENT = 0
 FULLY_INCONSISTENT = 1
 PARTIALLY_INCONSISTENT = 2
 
+class MerkleTreeNode:
+	def __init__(self, start, end):
+		self.hashList = defaultdict(list)
+		self.init(start, end)
+
+	def init(self, start, end):
+		root = (start + end)/2
+		self.root = root
+
+	def setLeftChild(self, value):
+		self.hashList[self.root].insert(0, value)
+
+	def getLeftChild(self):
+		return self.hashList[self.root][0]
+
+	def setRightChild(self, value):
+		self.hashList[self.root].insert(1, value)
+
+	def getRightChild(self):
+		return self.hashList[self.root][1]
+
+	def getNodeRoot(self):
+		return self.root
+
+class MerkleTreeLeaf:
+	def __init__(self):
+		self.value = 0;
+
+	def setValue(self):
+		self.value = value
+
+	def getValue(self):
+		return self.value
+
 class MerkleTree:
 	def __init__(self, partitioner, depth, maxRange):
 		self.partitioner = partitioner
@@ -16,16 +50,16 @@ class MerkleTree:
 		self.root = ''
 		self.partitionList = []
 		self.hashList = defaultdict(list)
-		self.init()
+		self.init(partitioner, depth, maxRange)
 
-	def init(self):
+	def init(self, partitioner, depth, maxRange):
 		"""
 		This method will create boilerplate tree with the nodes defined from max range and partitioner
 		It is a naive approach, partitioning is not generalized
 		"""
 		self.createPartitionList()
 		self.setRoot()
-		self.createTree()
+		self.createTree(partitioner, maxRange)
 
 	def createPartitionList(self):
 		"""
@@ -39,13 +73,23 @@ class MerkleTree:
 	def getPartitionList(self):
 		return self.partitionList
 
-	def createTree(self):
+	def createTree(self, partitioner, maxRange):
 		"""
 		Create nodes based on the partition list
 		"""
-		for node in self.partitionList:
-			self.hashList[node].append('')
-			self.hashList[node].append('')
+		start = 0
+		end = maxRange
+		treeRoot = MerkleTreeNode(start, end)
+		treeRoot.setLeftChild(MerkleTreeNode(start, treeRoot.getNodeRoot()))
+		treeRoot.setRightChild(MerkleTreeNode(treeRoot.getNodeRoot()+1, end))
+		lchild = treeRoot.getLeftChild()
+		rchild = treeRoot.getRightChild()
+		print "l: " + str(lchild)
+
+
+		# for node in self.partitionList:
+		# 	self.hashList[node].append('')
+		# 	self.hashList[node].append('')
 
 	def addRows(self, key):
 		"""
@@ -97,7 +141,7 @@ class MerkleTree:
 		"""
 		Set root node of a merkle tree based on the partioned list
 		"""
-		self.root = self.partitionList[len(self.partitionList)/2]
+		self.root = hash(str(self.partitionList[len(self.partitionList)/2]))
 		#self.partitionList.remove(self.root)
 
 	def getRoot(self):
@@ -112,7 +156,7 @@ class MerkleTree:
 		"""
 		print "Merkle Tree Root = " + str(self.getRoot())
 		for token in self.partitionList:
-			print "Node Hash: " + str(token) + "\t\tChildren: " + str(self.hashList[token])
+			print "Node Range: " + str(token) + "\t Node Hash: " + hash(str(token)) + "\tChildren: " + str(self.hashList[token])
 
 
 
@@ -120,7 +164,7 @@ def MerkleTreeDifference(ltree, rtree):
 	if (ltree.getRoot() == rtree.getRoot()):
 		print "Roots are equal: Tree1 Root-> " + str(ltree.getRoot()) + " Tree2 Root-> " + str(rtree.getRoot())
 		return CONSISTENT
-			
+
 
 def hash(key):
 	"""
@@ -140,7 +184,7 @@ def main():
 	ltree.addRows(135)
 	ltree.addRows(170)
 	ltree.addRows(185)
-	print "Tree 1: -> \n"
+	print "\n\tTree 1: -> \n"
 	ltree.display()
 
 	# create second tree
@@ -149,7 +193,7 @@ def main():
 	rtree.addRows(135)
 	rtree.addRows(170)
 	rtree.addRows(185)
-	print "Tree 2: -> \n"
+	print "\n\tTree 2: -> \n"
 	rtree.display()
 
 	# find out the difference in the trees
